@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { loginUser } from "../services/api";
 
 const initialState = {
   email: "",
@@ -10,14 +11,16 @@ function Login() {
   const navigate = useNavigate();
   const [form, setForm] = useState(initialState);
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
     setForm((current) => ({ ...current, [name]: value }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    setError("");
 
     if (!form.email.includes("@")) {
       setError("Enter a valid email address.");
@@ -29,8 +32,17 @@ function Login() {
       return;
     }
 
-    localStorage.setItem("mock-auth", JSON.stringify({ email: form.email, role: "admin" }));
-    navigate("/admin");
+    setSubmitting(true);
+
+    try {
+      const response = await loginUser(form);
+      localStorage.setItem("auth-session", JSON.stringify(response.data?.data || {}));
+      navigate("/admin");
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || "Unable to sign in.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -68,8 +80,8 @@ function Login() {
           {error ? <div className="status-message status-message--error">{error}</div> : null}
 
           <div className="field field--full">
-            <button className="button button--primary" type="submit">
-              Sign In
+            <button className="button button--primary" type="submit" disabled={submitting}>
+              {submitting ? "Signing In..." : "Sign In"}
             </button>
           </div>
         </form>

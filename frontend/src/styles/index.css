@@ -180,7 +180,8 @@ select {
 
 .field input,
 .field textarea,
-.filter-control select {
+.filter-control select,
+.filter-control input {
   width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
@@ -338,6 +339,19 @@ select {
   display: grid;
   gap: 0.4rem;
   min-width: 180px;
+}
+
+.pagination-row,
+.pagination-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.pagination-row {
+  margin-top: 1rem;
+  color: var(--text-muted);
 }
 
 .auth-shell {

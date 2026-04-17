@@ -12,8 +12,9 @@ export const addComplaint = (payload) =>
     }
   });
 
-export const getComplaints = () => api.get("/complaints");
+export const getComplaints = (params = {}) => api.get("/complaints", { params });
 export const getAlerts = () => api.get("/alerts");
 export const getAnalytics = () => api.get("/analytics/summary");
+export const loginUser = (payload) => api.post("/auth/login", payload);
 
 export default api;

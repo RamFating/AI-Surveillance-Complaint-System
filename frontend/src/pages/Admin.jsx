@@ -4,6 +4,7 @@ import MetricCard from "../components/MetricCard";
 import { getAnalytics, getComplaints } from "../services/api";
 
 const statusOptions = ["All", "Pending", "In Progress", "Resolved"];
+const pageSize = 5;
 const defaultAnalytics = {
   totalComplaints: 0,
   pendingComplaints: 0,
@@ -14,6 +15,9 @@ const defaultAnalytics = {
 function Admin() {
   const [complaints, setComplaints] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState("All");
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({ page: 1, limit: pageSize, total: 0 });
   const [analytics, setAnalytics] = useState(defaultAnalytics);
   const [error, setError] = useState("");
 
@@ -21,11 +25,19 @@ function Admin() {
     const loadPageData = async () => {
       try {
         const [complaintResponse, analyticsResponse] = await Promise.all([
-          getComplaints(),
+          getComplaints({
+            page,
+            limit: pageSize,
+            status: selectedStatus === "All" ? "" : selectedStatus,
+            search
+          }),
           getAnalytics()
         ]);
 
         setComplaints(complaintResponse.data?.data || []);
+        setPagination(
+          complaintResponse.data?.pagination || { page, limit: pageSize, total: 0 }
+        );
         setAnalytics(analyticsResponse.data?.data || defaultAnalytics);
         setError("");
       } catch (requestError) {
@@ -34,15 +46,22 @@ function Admin() {
     };
 
     loadPageData();
-  }, []);
+  }, [page, search, selectedStatus]);
 
-  const filteredComplaints = useMemo(() => {
-    if (selectedStatus === "All") {
-      return complaints;
-    }
+  const totalPages = useMemo(
+    () => Math.max(1, Math.ceil((pagination.total || 0) / (pagination.limit || pageSize))),
+    [pagination]
+  );
 
-    return complaints.filter((complaint) => complaint.status === selectedStatus);
-  }, [complaints, selectedStatus]);
+  const handleStatusChange = (event) => {
+    setSelectedStatus(event.target.value);
+    setPage(1);
+  };
+
+  const handleSearchChange = (event) => {
+    setSearch(event.target.value);
+    setPage(1);
+  };
 
   return (
     <div className="admin-layout">
@@ -71,8 +90,17 @@ function Admin() {
           </div>
 
           <label className="filter-control">
+            <span>Search</span>
+            <input
+              value={search}
+              onChange={handleSearchChange}
+              placeholder="Search description or location"
+            />
+          </label>
+
+          <label className="filter-control">
             <span>Status</span>
-            <select value={selectedStatus} onChange={(event) => setSelectedStatus(event.target.value)}>
+            <select value={selectedStatus} onChange={handleStatusChange}>
               {statusOptions.map((status) => (
                 <option key={status} value={status}>
                   {status}
@@ -82,7 +110,32 @@ function Admin() {
           </label>
         </div>
 
-        <ComplaintTable complaints={filteredComplaints} />
+        <ComplaintTable complaints={complaints} />
+
+        <div className="pagination-row">
+          <span>
+            Page {pagination.page} of {totalPages}
+          </span>
+
+          <div className="pagination-actions">
+            <button
+              className="button"
+              type="button"
+              disabled={page <= 1}
+              onClick={() => setPage((current) => Math.max(1, current - 1))}
+            >
+              Previous
+            </button>
+            <button
+              className="button button--primary"
+              type="button"
+              disabled={page >= totalPages}
+              onClick={() => setPage((current) => current + 1)}
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </section>
     </div>
   );
