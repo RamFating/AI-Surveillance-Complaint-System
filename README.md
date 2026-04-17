@@ -1,6 +1,6 @@
 # AI Surveillance Complaint System
 
-An industry-style full stack application for complaint management, AI-powered surveillance alerts, and admin analytics.
+An AI-powered full stack application for complaint management, real-time surveillance alerts, and admin analytics, designed with an industry-style modular architecture.
 
 ## Structure
 
