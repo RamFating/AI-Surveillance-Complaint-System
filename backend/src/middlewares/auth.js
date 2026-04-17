@@ -22,3 +22,13 @@ export const requireRole = (role) => (request, response, next) => {
 
   return next();
 };
+
+export const allowAdminOrService = (request, response, next) => {
+  const serviceToken = request.headers["x-service-token"];
+  if (serviceToken && serviceToken === (process.env.AI_SHARED_SECRET || "change-this-ai-secret")) {
+    request.service = { name: "ai-module" };
+    return next();
+  }
+
+  return requireAuth(request, response, () => requireRole("admin")(request, response, next));
+};

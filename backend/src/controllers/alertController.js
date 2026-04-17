@@ -10,7 +10,8 @@ export const getAlerts = (_request, response) => {
 };
 
 export const createAlert = (request, response) => {
-  const { title, message, severity = "High", source = "AI Module" } = request.body;
+  const { title, message, severity = "High", source = "AI Module", camera_id = null } =
+    request.body;
 
   if (!title || !message) {
     return response.status(400).json({
@@ -25,6 +26,7 @@ export const createAlert = (request, response) => {
     message,
     severity,
     source,
+    camera_id,
     createdAt: new Date().toISOString()
   };
 
